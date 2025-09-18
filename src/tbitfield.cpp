@@ -103,7 +103,7 @@ TBitField& TBitField::operator=(const TBitField &bf) // присваивание
 
 bool TBitField::operator==(const TBitField& bf) const // сравнение
 {
-    if (n != bf.n) { throw; }
+    if (n != bf.n) { throw std::runtime_error("Нельзя сравнить множества разных размеров!"); }
     TBitField result(std::min(n, bf.n));
     for (int i = 0; i < std::min(memLen, bf.memLen); i++) {
         result.pMem[i] = pMem[i] & bf.pMem[i];
@@ -119,7 +119,7 @@ bool TBitField::operator!=(const TBitField &bf) const // сравнение
 
 TBitField TBitField::operator|(const TBitField &bf) // операция "или"
 {
-    if (n != bf.n) { throw; }
+    if (n != bf.n) { throw std::runtime_error("Нельзя объединить множества разных размеров!"); }
     TBitField result(std::max(n, bf.n));
     for (int i = 0; i < (std::max(memLen, bf.memLen) + std::min(memLen, bf.memLen)); i++) {
         result.pMem[i] = pMem[i] | bf.pMem[i];
@@ -131,7 +131,7 @@ TBitField TBitField::operator|(const TBitField &bf) // операция "или"
 TBitField TBitField::operator&(const TBitField &bf) // операция "и"
 
 {
-    if (n != bf.n) { throw; }
+    if (n != bf.n) { throw std::runtime_error("Нельзя пересечь множества разных размеров!"); }
     TBitField result(std::min(n, bf.n));
     for (int i = 0; i < std::min(MemLen, bf.MemLen); i++) {
         result.pMem[i] = pMem[i] & bf.pMem[i];
@@ -145,8 +145,15 @@ TBitField TBitField::operator~(void) // отрицание
     TBitField result(n);
 
     for (int i = 0; i < MemLen; i++) {
-        result[i] = (1 >> (n)-1) & ~pMem[i]; //1-> 0, 0 (обозначающте числа, те с индексом < b) -> 1, 0 -> 0
+        result.pMem[i] = ~pMem[i];
     }
+
+        int extraBits = n % BitPerInt;
+        if (extraBits != 0) {
+            TELEM mask = (1U << extraBits) - 1;
+            result.pMem[MemLen - 1] &= mask;
+        }
+    
 }
 
 // ввод/вывод
