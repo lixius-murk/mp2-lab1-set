@@ -1,5 +1,5 @@
 #include "tbitfield.h"
-
+#include "vector"
 
 //int  BitLen; // длина битового поля - макс. к-во битов
 //TELEM* pMem; // память для представления битового поля
@@ -27,18 +27,15 @@ TBitField::TBitField(int len)
 
 TBitField::TBitField(const TBitField& bf) // конструктор копирования
 {
-    if (this != &bf) {
-        if (MemLen != bf.MemLen) {
-            delete[] pMem;
-            MemLen = bf.MemLen;
-            pMem = new TELEM[MemLen];
-        }
+
+    MemLen = bf.MemLen;
+
 
         n = bf.n;
         pMem = new TELEM[MemLen];
         for (int i = 0; i < n; i++) {
             pMem[i] = bf.pMem[i];
-        }
+        
     }
 }
 
@@ -53,6 +50,7 @@ int TBitField::GetMemIndex(const int n) const // индекс Мем для би
         throw out_of_range("Индекс за пределами диапазона");
     }
     return n / BitPerInt;
+}
 
 TELEM TBitField::GetMemMask(const int n) const // битовая маска для бита n
 {
@@ -104,6 +102,7 @@ TBitField& TBitField::operator=(const TBitField& bf) // присваивание
             pMem[i] = bf.pMem[i];
         }
     }
+    return *this;
 }
 
 bool TBitField::operator==(const TBitField& bf) const // сравнение
@@ -147,17 +146,18 @@ TBitField TBitField::operator&(const TBitField& bf) // операция "и"
 
 TBitField TBitField::operator~(void) // отрицание
 {
-    TBitField result(n);
+    TBitField res(n);
 
     for (int i = 0; i < MemLen; i++) {
-        result.pMem[i] = ~pMem[i];
+        res.pMem[i] = ~pMem[i];
     }
 
     int extraBits = n % BitPerInt;
     if (extraBits != 0) {
         TELEM mask = (1 << extraBits) - 1;
-        result.pMem[MemLen - 1] &= mask;
+        res.pMem[MemLen - 1] &= mask;
     }
+    return res;
 
 }
 
