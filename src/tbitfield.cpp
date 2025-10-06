@@ -25,17 +25,12 @@ TBitField::TBitField(int len)
     }
 }
 
-TBitField::TBitField(const TBitField& bf) // конструктор копирования
+TBitField::TBitField(const TBitField& bf) :
+    n(bf.n), MemLen(bf.MemLen), BitPerInt(bf.BitPerInt)
 {
-
-    MemLen = bf.MemLen;
-
-
-        n = bf.n;
-        pMem = new TELEM[MemLen];
-        for (int i = 0; i < n; i++) {
-            pMem[i] = bf.pMem[i];
-        
+    pMem = new TELEM[MemLen];
+    for (int i = 0; i < MemLen; i++) {
+        pMem[i] = bf.pMem[i];
     }
 }
 
@@ -70,7 +65,12 @@ int TBitField::GetLength(void) const // получить длину (к-во б�
 
 void TBitField::SetBit(const int n) // установить бит
 {
-    pMem[GetMemIndex(n)] |= GetMemMask(n); //надо ли выделять новые байты?????
+    if (n < 0 || n >= this->n) {
+        throw out_of_range("Индекс за пределами диапазона");
+    }
+    int index = n / BitPerInt;
+    TELEM mask = 1 << (n % BitPerInt);
+    pMem[index] |= mask;
 }
 
 void TBitField::ClrBit(const int n) // очистить бит
@@ -81,24 +81,24 @@ void TBitField::ClrBit(const int n) // очистить бит
 int TBitField::GetBit(const int n) const // получить значение бита
 {
     if (n < 0 || n >= this->n) {
-        return 0;
+        throw out_of_range("Индекс за пределами диапазона");
     }
     return (pMem[GetMemIndex(n)] & GetMemMask(n));
 }
 
 // битовые операции
 
-TBitField& TBitField::operator=(const TBitField& bf) // присваивание
+TBitField& TBitField::operator=(const TBitField& bf)
 {
     if (this != &bf) {
-        if (MemLen != bf.MemLen) {
-            delete[] pMem;
-            MemLen = bf.MemLen;
-            pMem = new TELEM[MemLen];
-        }
+        delete[] pMem;
 
         n = bf.n;
-        for (int i = 0; i < n; i++) {
+        MemLen = bf.MemLen;
+        BitPerInt = bf.BitPerInt;
+        
+        pMem = new TELEM[MemLen];
+        for (int i = 0; i < MemLen; i++) {
             pMem[i] = bf.pMem[i];
         }
     }
@@ -107,13 +107,27 @@ TBitField& TBitField::operator=(const TBitField& bf) // присваивание
 
 bool TBitField::operator==(const TBitField& bf) const // сравнение
 {
-    if (n != bf.n) { throw std::runtime_error("Нельзя сравнить множества разных размеров!"); }
-    TBitField result(std::min(n, bf.n));
-    for (int i = 0; i < std::min(MemLen, bf.MemLen); i++) {
-        result.pMem[i] = pMem[i] & bf.pMem[i];
+    int minLen = min(n, bf.n);
+    for (int i = 0; i < minLen; i++) {
+        if (GetBit(i) != bf.GetBit(i)) return 0;
     }
 
-    return (result == 1) ? 1 : 0;
+    for (int i = minLen; i < n; i++) {
+        if (GetBit(i)) return 0;
+    }
+    for (int i = minLen; i < bf.n; i++) {
+        if (bf.GetBit(i)) return 0;
+    }
+
+    return true;
+
+    //if (n != bf.n) { throw std::runtime_error("Нельзя сравнить множества разных размеров!"); }
+    //TBitField result(std::min(n, bf.n));
+    //for (int i = 0; i < std::min(MemLen, bf.MemLen); i++) {
+    //    result.pMem[i] = pMem[i] & bf.pMem[i];
+    //}
+
+    //return (result == 1) ? 1 : 0;
 }
 
 bool TBitField::operator!=(const TBitField& bf) const // сравнение
@@ -123,10 +137,24 @@ bool TBitField::operator!=(const TBitField& bf) const // сравнение
 
 TBitField TBitField::operator|(const TBitField& bf) // операция "или"
 {
-    if (n != bf.n) { throw std::runtime_error("Нельзя объединить множества разных размеров!"); }
-    TBitField result(std::max(n, bf.n));
-    for (int i = 0; i < (std::max(MemLen, bf.MemLen) + std::min(MemLen, bf.MemLen)); i++) {
+    //if (n != bf.n) { throw std::runtime_error("Нельзя объединить множества разных размеров!"); }
+    int maxLen = max(n, bf.n);
+    TBitField result(maxLen);
+    int minMemLen = min(MemLen, bf.MemLen);
+
+    for (int i = 0; i < minMemLen; i++) {
         result.pMem[i] = pMem[i] | bf.pMem[i];
+    }
+
+    if (MemLen > minMemLen) {
+        for (int i = minMemLen; i < MemLen; i++) {
+            result.pMem[i] = pMem[i];
+        }
+    }
+    else if (bf.MemLen > minMemLen) {
+        for (int i = minMemLen; i < bf.MemLen; i++) {
+            result.pMem[i] = bf.pMem[i];
+        }
     }
 
     return result;
@@ -135,31 +163,47 @@ TBitField TBitField::operator|(const TBitField& bf) // операция "или"
 TBitField TBitField::operator&(const TBitField& bf) // операция "и"
 
 {
-    if (n != bf.n) { throw std::runtime_error("Нельзя пересечь множества разных размеров!"); }
-    TBitField result(std::min(n, bf.n));
-    for (int i = 0; i < std::min(MemLen, bf.MemLen); i++) {
+    //if (n != bf.n) { throw std::runtime_error("Нельзя пересечь множества разных размеров!"); }
+    TBitField result(min(n, bf.n));
+    for (int i = 0; i < min(MemLen, bf.MemLen); i++) {
         result.pMem[i] = pMem[i] & bf.pMem[i];
     }
 
     return result;
+
 }
 
 TBitField TBitField::operator~(void) // отрицание
 {
+
     TBitField res(n);
 
     for (int i = 0; i < MemLen; i++) {
         res.pMem[i] = ~pMem[i];
     }
-
-    int extraBits = n % BitPerInt;
-    if (extraBits != 0) {
-        TELEM mask = (1 << extraBits) - 1;
-        res.pMem[MemLen - 1] &= mask;
+    if (MemLen > 0) {
+        int extraBits = n % BitPerInt;
+        if (extraBits != 0) {
+            TELEM mask = (1 << extraBits) - 1;
+            res.pMem[MemLen - 1] &= mask;
+        }
     }
     return res;
-
 }
+
+/*TEST(TBitField, can_invert_large_bitfield)
+{
+    const int size = 38;
+    TBitField bf(size), negBf(size), expNegBf(size);
+    bf.SetBit(35);
+    negBf = ~bf;
+
+    for (int i = 0; i < size; i++)
+        expNegBf.SetBit(i);
+    expNegBf.ClrBit(35);
+
+    EXPECT_EQ(expNegBf, negBf);
+}*/
 
 // ввод/вывод
 
