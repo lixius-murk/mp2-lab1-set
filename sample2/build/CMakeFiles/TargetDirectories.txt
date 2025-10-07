@@ -1,0 +1,3 @@
+C:/Users/felyl/git/mp2-lab1-set/sample2/build/CMakeFiles/main.dir
+C:/Users/felyl/git/mp2-lab1-set/sample2/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/felyl/git/mp2-lab1-set/sample2/build/CMakeFiles/ZERO_CHECK.dir

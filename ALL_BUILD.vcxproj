@@ -108,6 +108,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
+    <ProjectReference Include="C:\Users\felyl\git\mp2-lab1-set\sample2\CrossRoad.vcxproj">
+      <Project>{9014A1C4-A11B-345C-B1CA-545A2E69635F}</Project>
+      <Name>CrossRoad</Name>
+    </ProjectReference>
     <ProjectReference Include="C:\Users\felyl\git\mp2-lab1-set\gtest\gtest.vcxproj">
       <Project>{B234CC2B-BD62-3AA3-AB23-957D6087DF71}</Project>
       <Name>gtest</Name>
