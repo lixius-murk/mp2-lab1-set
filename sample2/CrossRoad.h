@@ -1,10 +1,12 @@
+#pragma once
+
 #include "TrafficLights.h"
 
 
 class CrossRoad {
-	TrafficLights light;
+	TrafficLights *light;
 public:
-	CrossRoad();
+	CrossRoad(TrafficLights* tr);
 	void runCR();
 
 };

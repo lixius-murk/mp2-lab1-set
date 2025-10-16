@@ -1,5 +1,6 @@
-#include "tbitfield.h"
+#pragma once
 
+#include "tbitfield.h"
 enum COLORS { RED, GREEN, YELLOW };
 
 class TrafficLights {
@@ -20,4 +21,5 @@ public:
     void printState() const;
     void switchState();
     void clrState();
+
 };

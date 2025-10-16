@@ -22,6 +22,7 @@ include_directories("${MP2_INCLUDE}" gtest)
 
 # BUILD описание того, как собирается
 add_subdirectory(src)
+#add_subdirectory(include)
 add_subdirectory(samples)#другие примеры
 add_subdirectory(sample2)
 add_subdirectory(gtest)

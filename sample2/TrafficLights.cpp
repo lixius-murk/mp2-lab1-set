@@ -65,3 +65,4 @@ void TrafficLights::clrState() {
 		state.ClrBit(i);
 	}
 };
+

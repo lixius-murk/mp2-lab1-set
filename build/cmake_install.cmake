@@ -36,6 +36,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("C:/Users/felyl/git/mp2-lab1-set/build/src/cmake_install.cmake")
   include("C:/Users/felyl/git/mp2-lab1-set/build/samples/cmake_install.cmake")
+  include("C:/Users/felyl/git/mp2-lab1-set/build/sample2/cmake_install.cmake")
   include("C:/Users/felyl/git/mp2-lab1-set/build/gtest/cmake_install.cmake")
   include("C:/Users/felyl/git/mp2-lab1-set/build/test/cmake_install.cmake")
 

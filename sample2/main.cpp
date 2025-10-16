@@ -3,7 +3,8 @@
 
 void main() {
 	setlocale(LC_ALL, "Russian");
-	CrossRoad cr;
+	TrafficLights tr;
+	CrossRoad cr(&tr);
 	cr.runCR();
 
 }

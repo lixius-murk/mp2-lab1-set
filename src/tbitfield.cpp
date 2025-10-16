@@ -44,7 +44,18 @@ int TBitField::GetMemIndex(const int n) const // индекс Мем для би
     if (n < 0 || n >= this->n) {
         throw out_of_range("Индекс за пределами диапазона");
     }
-    return n / BitPerInt;
+    if ((BitPerInt & (BitPerInt - 1)) == 0) {
+        int move = 0;
+        int temp = BitPerInt;
+        while (temp > 1) {
+            temp >>= 1;
+            move++;
+        }
+        return n >> move;
+    }
+    else {
+        return n / BitPerInt;
+    }
 }
 
 TELEM TBitField::GetMemMask(const int n) const // битовая маска для бита n
@@ -52,7 +63,9 @@ TELEM TBitField::GetMemMask(const int n) const // битовая маска дл
     if (n < 0 || n >= this->n) {
         throw out_of_range("Индекс за пределами диапазона");
     }
-    return 1 << (n % BitPerInt);
+    TELEM mask = BitPerInt - 1;
+
+    return 1 << (n & mask);
 
 }
 
@@ -68,8 +81,8 @@ void TBitField::SetBit(const int n) // установить бит
     if (n < 0 || n >= this->n) {
         throw out_of_range("Индекс за пределами диапазона");
     }
-    int index = n / BitPerInt;
-    TELEM mask = 1 << (n % BitPerInt);
+    int index = GetMemIndex(n);
+    TELEM mask = GetMemMask(n);
     pMem[index] |= mask;
 }
 
@@ -163,7 +176,6 @@ TBitField TBitField::operator|(const TBitField& bf) // операция "или"
 TBitField TBitField::operator&(const TBitField& bf) // операция "и"
 
 {
-    //if (n != bf.n) { throw std::runtime_error("Нельзя пересечь множества разных размеров!"); }
     TBitField result(min(n, bf.n));
     for (int i = 0; i < min(MemLen, bf.MemLen); i++) {
         result.pMem[i] = pMem[i] & bf.pMem[i];
